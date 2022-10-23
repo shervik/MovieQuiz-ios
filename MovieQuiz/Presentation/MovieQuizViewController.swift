@@ -1,72 +1,282 @@
 import UIKit
 
+private enum Constants {
+    static let anchorHorizontal: CGFloat = 20
+    static let anchorTop: CGFloat = 10
+    static let anchorLabelHorisontal: CGFloat = 42
+    static let anchorLabelVertical: CGFloat = 13
+    static let spacing: CGFloat = 20
+    static let heightButton: CGFloat = 60
+    static let fontSizeLabel: CGFloat = 16
+    static let fontSizeQuestion: CGFloat = 23
+    static let fontSizeButton: CGFloat = 20
+    static let cornerRadius: CGFloat = 15
+    static let questionQuiz: String = "Рейтинг этого фильма больше чем 6?"
+}
+
+// для состояния "Вопрос задан"
+struct QuizStepViewModel {
+    let image: UIImage
+    let question: String
+    let questionNumber: String
+}
+
+// для состояния "Результат квиза"
+struct QuizResultsViewModel {
+    let title: String
+    let text: String
+    let buttonText: String
+}
+
+// для состояния "Результат ответа"
+struct QuizResponseViewModel {
+    let isTrue: Bool
+}
+
+struct QuizQuestion {
+    let image: String
+    let text: String
+    let correctAnswer: Bool
+}
+
 final class MovieQuizViewController: UIViewController {
+    private var safeArea: UILayoutGuide { view.safeAreaLayoutGuide }
+    
+    private let questions: [QuizQuestion] = [
+        QuizQuestion(image: "The Godfather", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "The Dark Knight", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "Kill Bill", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "The Avengers", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "Deadpool", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "The Green Knight", text: Constants.questionQuiz, correctAnswer: true),
+        QuizQuestion(image: "Old", text: Constants.questionQuiz, correctAnswer: false),
+        QuizQuestion(image: "The Ice Age Adventures of Buck Wild", text: Constants.questionQuiz, correctAnswer: false),
+        QuizQuestion(image: "Tesla", text: Constants.questionQuiz, correctAnswer: false),
+        QuizQuestion(image: "Vivarium", text: Constants.questionQuiz, correctAnswer: false)
+    ]
+    
+    private let questionTitleLabel = UILabel()
+    private let indexLabel = UILabel()
+    private let previewImage = UIImageView()
+    private let parentView = UIView()
+    private let questionLabel = UILabel()
+    
+    private let yesButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Да", for: .normal)
+        return button
+    }()
+
+    private let noButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Нет", for: .normal)
+        return button
+    }()
+
+    private lazy var labelStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.addArrangedSubview(questionTitleLabel)
+        stackView.addArrangedSubview(indexLabel)
+        return stackView
+    }()
+    
+    private lazy var buttonStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = Constants.spacing
+        stackView.distribution = .fillEqually
+        stackView.heightAnchor.constraint(equalToConstant: Constants.heightButton).isActive = true
+        stackView.addArrangedSubview(noButton)
+        stackView.addArrangedSubview(yesButton)
+        return stackView
+    }()
+    
+    private lazy var mainStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = Constants.spacing
+        stackView.addArrangedSubview(labelStackView)
+        stackView.addArrangedSubview(previewImage)
+        stackView.addArrangedSubview(parentView)
+        stackView.addArrangedSubview(buttonStackView)
+        return stackView
+    }()
+    
+    private var currentQuestionIndex: Int = 0
+    private lazy var currentQuestion = questions[currentQuestionIndex]
+    private var correctAnswers: Int = 0
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureMainView()
+        configureLabel()
+        configureImage()
+        configureQuestionLabel()
+        configureButton()
+        show(quiz: convert(model: currentQuestion))
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.backgroundColor = .ypBlack
+    }
+    
+    // MARK: - Configuration views
+    
+    private func configureMainView() {
+        view.addSubview(mainStackView)
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        mainStackView.leadingAnchor.constraint(
+            equalTo: safeArea.leadingAnchor, constant: Constants.anchorHorizontal
+        ).isActive = true
+        mainStackView.trailingAnchor.constraint(
+            equalTo: safeArea.trailingAnchor, constant: -Constants.anchorHorizontal
+        ).isActive = true
+        mainStackView.topAnchor.constraint(
+            equalTo: safeArea.topAnchor, constant: Constants.anchorTop
+        ).isActive = true
+        mainStackView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor).isActive = true
+    }
+    
+    private func configureLabel() {
+        questionTitleLabel.textAlignment = .left
+        questionTitleLabel.text = "Вопрос:"
+        questionTitleLabel.textColor = .ypWhite
+        questionTitleLabel.font = UIFont.ysDisplayMedium(size: Constants.fontSizeLabel)
+
+        indexLabel.textAlignment = .right
+        indexLabel.textColor = .ypWhite
+        indexLabel.font = UIFont.ysDisplayMedium(size: Constants.fontSizeLabel)
+        indexLabel.setContentHuggingPriority(UILayoutPriority(252), for: .horizontal)
+    }
+    
+    private func configureImage() {
+        previewImage.widthAnchor.constraint(
+            equalTo: previewImage.heightAnchor, multiplier: 2 / 3
+        ).isActive = true
+        previewImage.contentMode = .scaleAspectFill
+        previewImage.backgroundColor = .ypWhite
+        previewImage.layer.masksToBounds = true
+        previewImage.layer.cornerRadius = Constants.cornerRadius
+        previewImage.layer.borderWidth = 8
+    }
+    
+    private func configureQuestionLabel() {
+        parentView.addSubview(questionLabel)
+        parentView.contentMode = .scaleAspectFill
+        
+        questionLabel.translatesAutoresizingMaskIntoConstraints = false
+        questionLabel.leadingAnchor.constraint(
+            equalTo: parentView.leadingAnchor, constant: Constants.anchorLabelHorisontal
+        ).isActive = true
+        questionLabel.trailingAnchor.constraint(
+            equalTo: parentView.trailingAnchor, constant: -Constants.anchorLabelHorisontal
+        ).isActive = true
+        questionLabel.topAnchor.constraint(
+            equalTo: parentView.topAnchor, constant: Constants.anchorLabelVertical
+        ).isActive = true
+        questionLabel.bottomAnchor.constraint(
+            equalTo: parentView.bottomAnchor, constant: -Constants.anchorLabelVertical
+        ).isActive = true
+        questionLabel.textAlignment = .center
+        questionLabel.textColor = .ypWhite
+        questionLabel.font = UIFont.ysDisplayBold(size: Constants.fontSizeQuestion)
+        questionLabel.numberOfLines = 2
+    }
+    
+    private func configureButton() {
+        let arrayButton = [yesButton, noButton]
+        arrayButton.forEach {
+            $0.setTitleColor(.ypBlack, for: .normal)
+            $0.backgroundColor = .ypWhite
+            $0.titleLabel?.font = UIFont.ysDisplayMedium(size: Constants.fontSizeButton)
+            $0.layer.cornerRadius = Constants.cornerRadius
+        }
+        
+        yesButton.addTarget(self, action: #selector(yesButtonClicked), for: .touchUpInside)
+        noButton.addTarget(self, action: #selector(noButtonClicked), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func yesButtonClicked(_ sender: UIButton) {
+        let currentQuestion = questions[currentQuestionIndex]
+        showAnswerResult(isCorrect: currentQuestion.correctAnswer == true)
+        
+        sender.isUserInteractionEnabled = false
+        noButton.isUserInteractionEnabled = false
+        sender.backgroundColor = .gray
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+            sender.isUserInteractionEnabled = true
+            sender.backgroundColor = .ypWhite
+            self.noButton.isUserInteractionEnabled = true
+        }
+    }
+
+    @objc private func noButtonClicked(_ sender: UIButton) {
+        let currentQuestion = questions[currentQuestionIndex]
+        showAnswerResult(isCorrect: currentQuestion.correctAnswer == false)
+        
+        sender.isUserInteractionEnabled = false
+        yesButton.isUserInteractionEnabled = false
+        sender.backgroundColor = .gray
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+            sender.isUserInteractionEnabled = true
+            sender.backgroundColor = .ypWhite
+            self.yesButton.isUserInteractionEnabled = true
+        }
+    }
+    
+    private func showAnswerResult(isCorrect: Bool) {
+        previewImage.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+        
+        if isCorrect { correctAnswers += 1 }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.showNextQuestionOrResults()
+            self.previewImage.layer.borderColor = UIColor.clear.cgColor
+        }
+    }
+    
+    private func show(quiz step: QuizStepViewModel) {
+        questionLabel.text = step.question
+        indexLabel.text = step.questionNumber
+        previewImage.image = step.image
+    }
+
+    private func show(quiz result: QuizResultsViewModel) {
+        let alert = UIAlertController(title: result.title, message: result.text, preferredStyle: .alert)
+
+        let action = UIAlertAction(title: result.buttonText, style: .default) {_ in
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            let firstQuestion = self.questions[self.currentQuestionIndex]
+            self.show(quiz: self.convert(model: firstQuestion))
+        }
+
+        alert.addAction(action)
+        self.present(alert, animated: true)
+    }
+    
+    private func showNextQuestionOrResults() {
+        if currentQuestionIndex == questions.count - 1 {
+            let results = QuizResultsViewModel(
+                title: "Раунд окончен!", text: "Ваш результат: \(correctAnswers)", buttonText: "Сыграть еще раз"
+            )
+            show(quiz: results)
+        } else {
+            currentQuestionIndex += 1
+            let nextQuestion = questions[currentQuestionIndex]
+            show(quiz: convert(model: nextQuestion))
+        }
+    }
+    
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+        return QuizStepViewModel(
+            image: UIImage(named: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
     }
 }
-
-/*
- Mock-данные
- 
- 
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- */
