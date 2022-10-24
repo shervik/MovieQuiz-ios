@@ -9,6 +9,6 @@ import Foundation
 import UIKit
 
 extension UIFont {
-    static func ysDisplayMedium(size: CGFloat) -> UIFont { UIFont(name: "YSDisplay-Medium", size: size) ?? UIFont() }
-    static func ysDisplayBold(size: CGFloat) -> UIFont { UIFont(name: "YSDisplay-Bold", size: size) ?? UIFont() }
+    static let ysDisplayMedium = UIFont(name: "YSDisplay-Medium", size: 20) ?? UIFont()
+    static let ysDisplayBold = UIFont(name: "YSDisplay-Bold", size: 23) ?? UIFont()
 }
