@@ -194,26 +194,26 @@ final class MovieQuizViewController: UIViewController {
     @objc private func buttonClicked(_ sender: UIButton) {
         let currentQuestion = questions[currentQuestionIndex]
         var givenAnswer = true
-        sender.isUserInteractionEnabled = false
+        sender.isEnabled = false
         sender.backgroundColor = .gray
 
         if sender == yesButton {
-            self.noButton.isUserInteractionEnabled = false
+            self.noButton.isEnabled = false
         } else {
             givenAnswer = false
-            self.yesButton.isUserInteractionEnabled = false
+            self.yesButton.isEnabled = false
         }
 
         self.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
 
         Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
-            sender.isUserInteractionEnabled = true
+            sender.isEnabled = true
             sender.backgroundColor = .ypWhite
 
             if sender == self.yesButton {
-                self.noButton.isUserInteractionEnabled = true
+                self.noButton.isEnabled = true
             } else {
-                self.yesButton.isUserInteractionEnabled = true
+                self.yesButton.isEnabled = true
             }
         }
     }
