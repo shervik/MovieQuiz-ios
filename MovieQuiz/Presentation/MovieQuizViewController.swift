@@ -67,8 +67,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenter = AlertPresenter(delegate: self)
         questionFactory?.requestNextQuestion()
         statisticService = StatisticServiceImplementation()
-        jsonToMovie()
-        print(NSHomeDirectory())
     }
 
     override func viewWillAppear(_ animated: Bool) {
