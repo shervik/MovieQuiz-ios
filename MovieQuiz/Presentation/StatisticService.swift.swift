@@ -70,8 +70,10 @@ final class StatisticServiceImplementation: StatisticService {
         let currentGame = GameRecord(correct: count, total: amount, date: Date())
         if bestGame < currentGame { bestGame = currentGame }
         gamesCount += 1
-        let total = Double(count) / Double(amount)
-        let totalAccuracy = total / Double(gamesCount) * 100
-        userDefaults.set(totalAccuracy, forKey: Keys.total.rawValue)
+
+        let сurrentAccuracy = Double(count) / Double(amount) * 100
+        let savingTotalAccurancy = totalAccuracy * (Double(gamesCount) - 1)
+        let setAccuracy = (сurrentAccuracy + savingTotalAccurancy) / Double(gamesCount)
+        userDefaults.set(setAccuracy, forKey: Keys.total.rawValue)
     }
 }

@@ -191,7 +191,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
         self.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
 
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) {[weak self] _ in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {[weak self] in
             guard let self = self else { return }
 
             sender.isEnabled = true
@@ -269,21 +269,5 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-    }
-
-    private func jsonToMovie() {
-        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        documentsURL?.appendPathComponent("top250MoviesIMDB.json")
-        guard let documentsURL = documentsURL else { return }
-        let jsonString = try? String(contentsOf: documentsURL)
-
-        do {
-            guard let data = jsonString?.data(using: .utf8) else { return }
-            let movie = try JSONDecoder().decode(ItemsMovie.self, from: data)
-
-            print(movie)
-        } catch {
-            print("Failed to parse: \(String(describing: jsonString))")
-        }
     }
 }

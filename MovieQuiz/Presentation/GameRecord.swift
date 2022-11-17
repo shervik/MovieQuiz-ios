@@ -16,6 +16,8 @@ struct GameRecord: Codable {
     let date: Date
 }
 
+/// lhs - рекорд последней наилучшей игры
+/// rhs - рекод текущей игры
 extension GameRecord: Comparable {
     static func < (lhs: GameRecord, rhs: GameRecord) -> Bool { // рекорд / текущая
         lhs.correct != rhs.correct ? lhs.correct < rhs.correct : true
