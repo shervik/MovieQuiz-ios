@@ -54,11 +54,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = Constants.spacing
-        stackView.addArrangedSubview(labelStackView)
-        stackView.addArrangedSubview(previewImage)
-        stackView.addArrangedSubview(activityIndicator)
-        stackView.addArrangedSubview(parentView)
-        stackView.addArrangedSubview(buttonStackView)
+        [labelStackView, previewImage, activityIndicator, parentView, buttonStackView].forEach { view in
+            stackView.addArrangedSubview(view)
+        }
         return stackView
     }()
 
