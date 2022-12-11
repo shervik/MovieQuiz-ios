@@ -1,5 +1,5 @@
 //
-//  StatisticService.swift.swift
+//  StatisticService.swift
 //  MovieQuiz
 //
 //  Created by Виктория Щербакова on 14.11.2022.
@@ -10,7 +10,6 @@ import Foundation
 private enum Keys: String {
     case correct, total, bestGame, gamesCount
 }
-
 
 /// totalAccuracy - общая точность игр
 /// gamesCount - кол-во сыгранных раундов

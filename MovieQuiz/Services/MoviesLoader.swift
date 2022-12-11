@@ -16,8 +16,13 @@ struct MoviesLoader: MoviesLoading {
         case noData, decodeFailed(_ error: Error)
     }
 
-    private let networkClient = NetworkClient()
-//TODO: Вынести ключ куда-нибудь отдельно
+    private let networkClient: NetworkRouting
+
+    init(networkClient: NetworkRouting) {
+        self.networkClient = networkClient
+    }
+
+    //TODO: Вынести ключ куда-нибудь отдельно
     private var mostPopularMoviesUrl: URL {
         guard let url = URL(string: "https://imdb-api.com/en/API/Top250Movies/k_cmbfw31b") else {
             preconditionFailure("Unable to construct mostPopularMoviesUrl")

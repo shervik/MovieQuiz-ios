@@ -20,12 +20,13 @@ final class QuestionFactory: QuestionFactoryProtocol {
 
     private weak var delegate: QuestionFactoryDelegate?
     private let moviesLoader: MoviesLoading
-    private let networkClient = NetworkClient()
+    private let networkClient: NetworkRouting
     private var movies: [MostPopularMovie] = []
 
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
         self.delegate = delegate
+        networkClient = NetworkClient()
     }
 
     func loadData() {
